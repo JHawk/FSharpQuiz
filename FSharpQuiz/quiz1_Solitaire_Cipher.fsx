@@ -139,26 +139,23 @@ module Sanitize =
         let setup = "Code in F Sharp, live longer!"
         let expected = [| 3; 15; 4; 5; 9 ; 14; 6; 19; 8; 1 ; 18; 16; 12; 9; 22 ; 5; 12; 15; 14; 7 ; 5; 18; 24; 24; 24 |]
         
-        if setup |> sanitize |> Array.map (fun a -> a |> Array.map letter_to_number) = expected then setup
+        if setup |> sanitize |> Array.map letter_to_number = expected then setup
         else failwith "sanitize is broken"
-   
-//
-//module Main =
-//    [<EntryPoint>]
-//    [<STAThread()>]
-//    let main (args: String []) =
+
+
+// Main 
 
 let s = "Code in Ruby, live longer!"
 
-let s = s |> sanitize |> Array.map (fun a -> a |> Array.map letter_to_number)
-let keystream = (s |> Seq.length) * 5 |> generate_keystream |> Array.map letter_to_number |> split 5
+let s' = s |> sanitize |> Array.map letter_to_number
+let keystream = (s' |> Seq.length) * 5 |> generate_keystream |> Array.map letter_to_number |> split 5
         
 Console.WriteLine(sprintf "keystream :: %A" keystream)
 Console.WriteLine(sprintf "s :: %A" s)
 
 let t = (keystream, s) ||> Seq.zip 
 Console.WriteLine(sprintf "%A" t)
-let t = t |> Seq.map (fun t -> Array.map (fun (a,b) -> a + b))
+let t' = t |> Seq.map (fun t -> Array.map (fun (a,b) -> a + b))
 Console.WriteLine()
 Console.ReadLine() |> ignore
 100000

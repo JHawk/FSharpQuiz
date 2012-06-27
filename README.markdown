@@ -1,0 +1,1 @@
+Our frontend team at Benchmark Solutions is solving RubyQuiz (http://www.rubyquiz.com) problems to better understand idiomatic language oriented programming in F#.
