@@ -19,10 +19,12 @@
         [<STAThread()>]
         let main (args: String []) =
 
-            let options =  quizzes |> List.map (fun q -> (q.id,q.start))
+            let options = quizzes |> List.map (fun q -> (q.id,q.start))
+            let format_options = 
+                options |> List.map (fun (id,_) -> id.ToString()) |> List.join_or
 
             let rec loop () =
-                let missing s = Console.WriteLine (sprintf "Unexpected entry : %A" s) ; loop()
+                let missing s = Console.WriteLine (sprintf "Unexpected entry : %A\nTry %s" s format_options) ; loop()
                 print_menu()
                 let s = Console.ReadLine()
                 match Int32.TryParse s with
