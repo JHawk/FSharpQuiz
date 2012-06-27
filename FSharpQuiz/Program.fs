@@ -8,6 +8,8 @@
         [<EntryPoint>]
         [<STAThread()>]
         let main (args: String []) =
-            solitaire_cipher "Code in Ruby, live longer!"
+            Console.WriteLine("What should I encrypt and then decrypt for you?")
+            let input = Console.ReadLine()
+            encrypt_decrypt input
             Console.ReadLine() |> ignore
             100000

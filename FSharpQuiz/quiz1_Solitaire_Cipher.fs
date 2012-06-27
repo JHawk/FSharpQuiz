@@ -14,6 +14,7 @@
 
         let number_to_letter i = caps.[i - 1]
         let letter_to_number l = cap_map |> Map.find l
+        let ensure_range i = if i > 26 then i - 26 elif i < 0 then i + 26 else i
 
     [<AutoOpen>]
     module internal DeckHelpers =
@@ -44,18 +45,19 @@
         let internal output_letter (deck: Deck) : char option =
             let top = deck.[0]
             let convert card =  
-                if card > 0 then
-                    let card = if card > 26 then card - 26 else card
-                    Some <| number_to_letter card
-                else
-                    None
+                if card > 0 then card |> ensure_range |> number_to_letter |> Some
+                else None
 
             if top > 0 then convert deck.[top]
             else convert deck.[deck.Length - 1]
 
         let internal deck: Deck = [1..52] @ [-1] @ [-2] |> List.toArray
     
-        let internal cut = move_joker jokerA >> move_joker jokerB >> move_joker jokerB >> triple_cut >> count_cut
+        let internal cut = move_joker jokerA >> 
+                           move_joker jokerB >> 
+                           move_joker jokerB >> 
+                           triple_cut >> 
+                           count_cut
 
         let generate_keystream len : char array =
             let rec keystream deck letters len  =
@@ -141,9 +143,9 @@
 
     [<AutoOpen>]
     module Cipher = 
-        let solitaire_cipher input =
-        //    let s = "Code in F Sharp, live longer!"
-    
+        let encrypt input =
+            Console.WriteLine(sprintf "Encrypting : %A" input)
+
             let letters = input |> sanitize 
     
             Console.WriteLine(sprintf "1) sanitize input : %A" letters)
@@ -152,10 +154,53 @@
 
             Console.WriteLine(sprintf "2) keystream : %A" keystream)
 
-            let input_numbers = letters |> Array.map letter_to_number |> split 5
+            let input_numbers = letters |> Array.map letter_to_number
 
             Console.WriteLine(sprintf "3) input numbers : %A" input_numbers)
 
-            let keystream_numbers = keystream |> Array.map letter_to_number |> split 5
+            let keystream_numbers = keystream |> Array.map letter_to_number
     
             Console.WriteLine(sprintf "4) keystream numbers : %A" keystream_numbers)
+
+            let added = (input_numbers, keystream_numbers) ||> Array.zip |> Array.map (fun (i,k) -> i + k |> ensure_range)
+
+            Console.WriteLine(sprintf "5) add keystream to input : %A" added)
+
+            let encrypted = added |> Array.map number_to_letter
+
+            Console.WriteLine(sprintf "6) back to letters : %A" encrypted)
+
+            encrypted
+
+        let decrypt encrypted =
+            Console.WriteLine(sprintf "Decrypting : %A" encrypted)
+
+            let keystream = (encrypted |> Seq.length) |> generate_keystream 
+
+            Console.WriteLine(sprintf "1) keystream : %A" keystream)
+            
+            let encrypted = encrypted |> Array.map letter_to_number 
+
+            Console.WriteLine(sprintf "2) encrypted numbers : %A" encrypted)
+            
+            let keystream_numbers = keystream |> Array.map letter_to_number
+
+            Console.WriteLine(sprintf "3) keystream numbers : %A" keystream_numbers)
+
+            let subtracted = (encrypted, keystream_numbers) ||> Array.zip |> Array.map (fun (e,k) -> e - k |> ensure_range)
+
+            Console.WriteLine(sprintf "4) subtract keystream from encrypted : %A" subtracted)
+
+            let decrypted = subtracted |> Array.map number_to_letter 
+                                       |> Array.map (fun c -> c.ToString())
+                                       |> Array.reduce (+)
+
+            Console.WriteLine(sprintf "5) decrypted : %A" decrypted)
+
+            decrypted
+
+        let encrypt_decrypt input = 
+            let encrypted = encrypt input
+            Console.WriteLine(sprintf "Encrypted result : %A" encrypted)
+            let decrypted = decrypt encrypted
+            Console.WriteLine(sprintf "Decrypted result : %A" decrypted)
