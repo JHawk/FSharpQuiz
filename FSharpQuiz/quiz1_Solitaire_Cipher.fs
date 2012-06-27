@@ -5,8 +5,8 @@
 
     [<AutoOpen>]
     module internal Helpers =
-        let internal caps    = [|'A'..'Z'|]
-        let internal cap_map = (caps, [|1..26|]) ||> Array.zip |> Map.ofArray
+        let caps    = [|'A'..'Z'|]
+        let cap_map = (caps, [|1..26|]) ||> Array.zip |> Map.ofArray
 
         let split l s = 
             let a = s |> Seq.toArray
@@ -18,22 +18,22 @@
 
     [<AutoOpen>]
     module internal DeckHelpers =
-        let internal jokerA = -1
-        let internal jokerB = -2
+        let jokerA = -1
+        let jokerB = -2
 
-        let internal move_joker (card: int) (deck: Deck) : Deck =
+        let move_joker (card: int) (deck: Deck) : Deck =
             let idx  =  deck |> Array.findIndex (fun c -> c = card)
             if (deck |> Array.length) - 1 = idx then Array.concat [ [|deck.[0] ; card|] ; deck.[1..idx - 1] ]
             else Array.concat [ deck.[0..idx - 1] ; [|deck.[idx + 1] ; card|] ; deck.[idx + 2..] ]
     
-        let internal triple_cut (deck: Deck) : Deck =
+        let triple_cut (deck: Deck) : Deck =
             let jokers = [(=) jokerA ; (=) jokerB] |> List.map (fun f -> deck |> Array.findIndex f) 
             let top, bottom = jokers |> List.min, jokers |> List.max
             Array.concat [  deck.[bottom + 1..]
                             deck.[top..bottom]
                             deck.[0..top - 1] ]
 
-        let internal count_cut (deck: Deck) : Deck =
+        let count_cut (deck: Deck) : Deck =
             let last_idx = (deck |> Array.length) - 1
             let bottom = deck.[last_idx]
             if bottom > 0 then
@@ -42,7 +42,7 @@
                                 [|bottom|] ]
             else deck
 
-        let internal output_letter (deck: Deck) : char option =
+        let output_letter (deck: Deck) : char option =
             let top = deck.[0]
             let convert card =  
                 if card > 0 then card |> ensure_range |> number_to_letter |> Some
@@ -51,9 +51,9 @@
             if top > 0 then convert deck.[top]
             else convert deck.[deck.Length - 1]
 
-        let internal deck: Deck = [1..52] @ [-1] @ [-2] |> List.toArray
+        let deck: Deck = [1..52] @ [-1] @ [-2] |> List.toArray
     
-        let internal cut = move_joker jokerA >> 
+        let cut = move_joker jokerA >> 
                            move_joker jokerB >> 
                            move_joker jokerB >> 
                            triple_cut >> 
@@ -70,7 +70,7 @@
             
     [<AutoOpen>]
     module internal DeckHelpersTests =
-        let internal pp setup expected = 
+        let pp setup expected = 
             (setup, expected) ||> Array.zip |> 
             Array.iter (fun (g,e) -> Console.WriteLine("{0} - {1}", g, e))  
     
@@ -120,14 +120,14 @@
     module internal Sanitize = 
         open System.Text.RegularExpressions
 
-        let internal format (s: string) = (new Regex("[^A-Z]+")).Replace(s.ToUpper(), "")
+        let format (s: string) = (new Regex("[^A-Z]+")).Replace(s.ToUpper(), "")
     
-        let internal pad l s = 
+        let pad l s = 
             Seq.toArray <| match (s |> String.length) % l with
                                | x when x < 1 -> s 
                                | x -> [0..x] |> List.fold (fun acc _ -> acc + "X") s 
 
-        let internal sanitize' i = format >> pad i
+        let sanitize' i = format >> pad i
 
         let sanitize = sanitize' 5
         
@@ -141,66 +141,47 @@
             if setup |> sanitize |> Array.map letter_to_number = expected then setup
             else failwith "sanitize is broken"
 
-    [<AutoOpen>]
-    module Cipher = 
-        let encrypt input =
-            Console.WriteLine(sprintf "Encrypting : %A" input)
+    type Cipher () = 
 
-            let letters = input |> sanitize 
-    
-            Console.WriteLine(sprintf "1) sanitize input : %A" letters)
-    
-            let keystream = (letters |> Seq.length) |> generate_keystream 
+        interface FSharpQuiz.General.IQuiz with
+            member __.id = 1
+            member __.description = "1) Solitaire Cipher"
+            member __.start () = 
+                    Console.WriteLine("What should I encrypt and then decrypt for you?")
+                    let input = Console.ReadLine()
+                    let encrypted = __.encrypt input
+                    Console.WriteLine(sprintf "Encrypted result : %A" encrypted)
+                    let decrypted = __.decrypt encrypted
+                    Console.WriteLine(sprintf "Decrypted result : %A" decrypted)
 
-            Console.WriteLine(sprintf "2) keystream : %A" keystream)
+        with member __.encrypt input =
+                        Console.WriteLine(sprintf "Encrypting : %A" input)
+                        let letters = input |> sanitize
+                        Console.WriteLine(sprintf "1) sanitize input : %A" letters)
+                        let keystream = (letters |> Seq.length) |> generate_keystream
+                        Console.WriteLine(sprintf "2) keystream : %A" keystream)
+                        let input_numbers = letters |> Array.map letter_to_number
+                        Console.WriteLine(sprintf "3) input numbers : %A" input_numbers)
+                        let keystream_numbers = keystream |> Array.map letter_to_number
+                        Console.WriteLine(sprintf "4) keystream numbers : %A" keystream_numbers)
+                        let added = (input_numbers, keystream_numbers) ||> Array.zip |> Array.map (fun (i,k) -> i + k |> ensure_range)
+                        Console.WriteLine(sprintf "5) add keystream to input : %A" added)
+                        let encrypted = added |> Array.map number_to_letter
+                        Console.WriteLine(sprintf "6) back to letters : %A" encrypted)
+                        encrypted
 
-            let input_numbers = letters |> Array.map letter_to_number
-
-            Console.WriteLine(sprintf "3) input numbers : %A" input_numbers)
-
-            let keystream_numbers = keystream |> Array.map letter_to_number
-    
-            Console.WriteLine(sprintf "4) keystream numbers : %A" keystream_numbers)
-
-            let added = (input_numbers, keystream_numbers) ||> Array.zip |> Array.map (fun (i,k) -> i + k |> ensure_range)
-
-            Console.WriteLine(sprintf "5) add keystream to input : %A" added)
-
-            let encrypted = added |> Array.map number_to_letter
-
-            Console.WriteLine(sprintf "6) back to letters : %A" encrypted)
-
-            encrypted
-
-        let decrypt encrypted =
-            Console.WriteLine(sprintf "Decrypting : %A" encrypted)
-
-            let keystream = (encrypted |> Seq.length) |> generate_keystream 
-
-            Console.WriteLine(sprintf "1) keystream : %A" keystream)
-            
-            let encrypted = encrypted |> Array.map letter_to_number 
-
-            Console.WriteLine(sprintf "2) encrypted numbers : %A" encrypted)
-            
-            let keystream_numbers = keystream |> Array.map letter_to_number
-
-            Console.WriteLine(sprintf "3) keystream numbers : %A" keystream_numbers)
-
-            let subtracted = (encrypted, keystream_numbers) ||> Array.zip |> Array.map (fun (e,k) -> e - k |> ensure_range)
-
-            Console.WriteLine(sprintf "4) subtract keystream from encrypted : %A" subtracted)
-
-            let decrypted = subtracted |> Array.map number_to_letter 
-                                       |> Array.map (fun c -> c.ToString())
-                                       |> Array.reduce (+)
-
-            Console.WriteLine(sprintf "5) decrypted : %A" decrypted)
-
-            decrypted
-
-        let encrypt_decrypt input = 
-            let encrypted = encrypt input
-            Console.WriteLine(sprintf "Encrypted result : %A" encrypted)
-            let decrypted = decrypt encrypted
-            Console.WriteLine(sprintf "Decrypted result : %A" decrypted)
+             member __.decrypt encrypted =
+                        Console.WriteLine(sprintf "Decrypting : %A" encrypted)
+                        let keystream = (encrypted |> Seq.length) |> generate_keystream 
+                        Console.WriteLine(sprintf "1) keystream : %A" keystream)
+                        let encrypted = encrypted |> Array.map letter_to_number 
+                        Console.WriteLine(sprintf "2) encrypted numbers : %A" encrypted)
+                        let keystream_numbers = keystream |> Array.map letter_to_number
+                        Console.WriteLine(sprintf "3) keystream numbers : %A" keystream_numbers)
+                        let subtracted = (encrypted, keystream_numbers) ||> Array.zip |> Array.map (fun (e,k) -> e - k |> ensure_range)
+                        Console.WriteLine(sprintf "4) subtract keystream from encrypted : %A" subtracted)
+                        let decrypted = subtracted |> Array.map number_to_letter 
+                                                   |> Array.map (fun c -> c.ToString())
+                                                   |> Array.reduce (+)
+                        Console.WriteLine(sprintf "5) decrypted : %A" decrypted)
+                        decrypted
