@@ -43,12 +43,12 @@
 
         let internal output_letter (deck: Deck) : char option =
             let top = deck.[0]
-
             let convert card =  
-                if card > 0 then 
+                if card > 0 then
                     let card = if card > 26 then card - 26 else card
                     Some <| number_to_letter card
-                else None
+                else
+                    None
 
             if top > 0 then convert deck.[top]
             else convert deck.[deck.Length - 1]
@@ -64,7 +64,7 @@
                     | _, _deck -> match output_letter _deck with
                                       | Some l -> keystream _deck (l :: letters) (len - 1) 
                                       | None   -> keystream _deck letters len
-            keystream deck [] len |> List.toArray
+            keystream deck [] len |> List.rev |> List.toArray
             
     [<AutoOpen>]
     module internal DeckHelpersTests =
@@ -107,15 +107,12 @@
             else Console.WriteLine("{0} - {1}", setup, expected) 
                  failwith (sprintf "output_letter is broken")
 
-    //    let ``check generate_keystream`` =
-    //        let expected = 
-    //            [|  'D' ; 'W' ; 'J' ; 'X' ; 'H' ; 'Y' ; 'R' ; 'F' ; 'D' ; 'G' |]
-    //        let setup = expected |> Array.length |> generate_keystream 
-    //
-    //        Console.WriteLine(setup)
-    //
-    //        if setup = expected then setup
-    //        else  pp setup expected; failwith (sprintf "generate_keystream is broken")
+        let ``check generate_keystream`` =
+            let expected = 
+                [|  'D' ; 'W' ; 'J' ; 'X' ; 'H' ; 'Y' ; 'R' ; 'F' ; 'D' ; 'G' |]
+            let setup = expected |> Array.length |> generate_keystream 
+            if setup = expected then setup
+            else  pp setup expected; failwith (sprintf "generate_keystream is broken")
 
     [<AutoOpen>]
     module internal Sanitize = 
