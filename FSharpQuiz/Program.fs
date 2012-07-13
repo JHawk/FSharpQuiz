@@ -3,10 +3,11 @@
     open System
     open FSharpQuiz.SolitaireCipher
     open FSharpQuiz.SecretSantas
+    open FSharpQuiz.Crosswords
 
     module Main =
         let quizzes : FSharpQuiz.General.IQuiz list = 
-            [Cipher () ; SecretSantas ()]
+            [ Cipher () ; SecretSantas () ; Crosswords () ]
         
         let print_menu () = 
             Console.WriteLine("***")
