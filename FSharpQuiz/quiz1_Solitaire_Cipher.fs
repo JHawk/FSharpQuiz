@@ -144,7 +144,7 @@
     type Cipher () = 
 
         interface FSharpQuiz.General.IQuiz with
-            member __.id = 1
+            member __.id = "1"
             member __.description = "1) Solitaire Cipher"
             member __.start () = 
                     Console.WriteLine("What should I encrypt and then decrypt for you?")

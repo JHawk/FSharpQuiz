@@ -41,6 +41,7 @@
     <Compile Include="quiz1_Solitaire_Cipher.fs" />
     <Compile Include="quiz2_Secret Santas.fs" />
     <Compile Include="quiz10_Crosswords.fs" />
+    <Compile Include="quizA_Langtons_Ant.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

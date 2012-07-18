@@ -15,8 +15,10 @@
             if actual <> expected then 
                 failwith <| sprintf "FAILED : actual %A not equal to %A" actual expected
 
-    module List =
+    module Seq = 
+        let fib = Seq.unfold (fun (a,b) -> Some(a + b, (b, a + b))) (1,1)
 
+    module List =
         /// <summary> Format a list of options into a nice human readable string. </summary>
         let join_or (l: 'x list): string =
             let last x y = x.ToString() + " or " + y.ToString()
@@ -55,6 +57,9 @@
             equal actual expected
             
     module General =
+        
+        let rec fib n = if (n < 2) then n else fib(n - 1) + fib(n - 2)
+
         let _continue (msg: string) : bool = 
             let show_response b =
                 Console.WriteLine(if b then "Yes" else "No")
@@ -65,6 +70,6 @@
             show_response (r.Contains("Y") || r |> String.IsNullOrEmpty)
 
         type IQuiz =
-            abstract member id: int
+            abstract member id: string
             abstract member description: string
             abstract member start: unit -> unit

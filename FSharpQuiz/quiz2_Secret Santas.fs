@@ -67,7 +67,7 @@
 
     type SecretSantas () = 
         interface FSharpQuiz.General.IQuiz with
-            member __.id = 2
+            member __.id = "2"
             member __.description = "2) Secret Santas"
             member __.start () = 
                         let dry_run = _continue ("Dry Run? (Doesn't actually email anyone.)") 
